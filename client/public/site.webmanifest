@@ -1,7 +1,8 @@
+
 {
-  "name": "Instance app",
-  "short_name": "",
-  "description": "",
+  "name": "PantryFinder",
+  "short_name": "PantryFinder",
+  "description": "Find, share, and support local food pantries.",
   "start_url": "/",
   "scope": "/",
   "icons": [
@@ -16,9 +17,9 @@
       "type": "image/png"
     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "background_color": "#0f172a",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "categories": ["productivity", "utilities"]
+  "categories": ["productivity", "utilities", "social"]
 }
