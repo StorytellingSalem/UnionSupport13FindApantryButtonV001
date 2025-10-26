@@ -5,8 +5,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { HostPantryForm } from './host-pantry-form';
 import { PantryMap } from './map';
+import { Pantry } from './types';
+import { initialPantries } from './initial-pantries';
 
 export function HomePage() {
+  const [pantries, setPantries] = React.useState<Pantry[]>(initialPantries);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+
+  const addPantry = (pantryData: Omit<Pantry, 'id'>) => {
+    setPantries(prev => [...prev, { ...pantryData, id: Date.now() }]);
+    setIsModalOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-slate-900 text-foreground">
       <header className="container mx-auto px-4 py-6 flex justify-between items-center">
@@ -26,11 +36,11 @@ export function HomePage() {
         </p>
         <div className="flex justify-center gap-4 mb-12">
           <Button size="lg" className="transition-transform transform hover:scale-105">Find a Pantry</Button>
-          <Dialog>
+          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
             <DialogTrigger asChild>
               <Button size="lg" variant="secondary" className="transition-transform transform hover:scale-105">Host a Pantry</Button>
             </DialogTrigger>
-            <HostPantryForm />
+            <HostPantryForm onSubmit={addPantry} />
           </Dialog>
         </div>
         <Card className="w-full max-w-4xl mx-auto text-left shadow-2xl">
@@ -39,7 +49,7 @@ export function HomePage() {
           </CardHeader>
           <CardContent>
             <div className="aspect-video bg-muted rounded-lg">
-              <PantryMap />
+              <PantryMap pantries={pantries} />
             </div>
           </CardContent>
         </Card>
