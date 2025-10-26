@@ -2,6 +2,9 @@
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import { HostPantryForm } from './host-pantry-form';
+import { PantryMap } from './map';
 
 export function HomePage() {
   return (
@@ -23,15 +26,20 @@ export function HomePage() {
         </p>
         <div className="flex justify-center gap-4 mb-12">
           <Button size="lg" className="transition-transform transform hover:scale-105">Find a Pantry</Button>
-          <Button size="lg" variant="secondary" className="transition-transform transform hover:scale-105">Host a Pantry</Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button size="lg" variant="secondary" className="transition-transform transform hover:scale-105">Host a Pantry</Button>
+            </DialogTrigger>
+            <HostPantryForm />
+          </Dialog>
         </div>
         <Card className="w-full max-w-4xl mx-auto text-left shadow-2xl">
           <CardHeader>
             <CardTitle>Pantry Map</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-              <p className="text-muted-foreground">Map will be here soon!</p>
+            <div className="aspect-video bg-muted rounded-lg">
+              <PantryMap />
             </div>
           </CardContent>
         </Card>

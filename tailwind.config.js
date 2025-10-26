@@ -1,3 +1,4 @@
+
 export default {
   darkMode: ['class'],
   content: ['./client/index.html', './client/src/**/*.{js,jsx,ts,tsx}'],
@@ -52,5 +53,10 @@ export default {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [
+    require('tailwindcss-animate'),
+    function ({ addVariant }) {
+      addVariant('leaflet-tile-pane', '.leaflet-tile-pane &');
+    },
+  ],
 };
