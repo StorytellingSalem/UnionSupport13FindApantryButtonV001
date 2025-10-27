@@ -1,8 +1,6 @@
 
 import * as React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { LandingPage } from './pages/landing/landing-page';
-import { PantryDetailsPage } from './pages/pantry-details/pantry-details-page';
 import { initialPantries } from './pages/home/initial-pantries';
 import { Pantry } from './pages/home/types';
 
@@ -15,13 +13,10 @@ function App() {
     return newPantry;
   };
 
+  // The router is removed as there is only one page now.
+  // If you need to add more pages, you can re-introduce react-router-dom
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<LandingPage pantries={pantries} addPantry={addPantry} />} />
-        <Route path="/pantry/:id" element={<PantryDetailsPage pantries={pantries} />} />
-      </Routes>
-    </Router>
+    <LandingPage pantries={pantries} addPantry={addPantry} />
   );
 }
 

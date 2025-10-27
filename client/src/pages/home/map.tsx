@@ -3,34 +3,22 @@ import * as React from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Pantry } from './types';
 import L from 'leaflet';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-
-// Fix for default icon path issue with webpack
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
-
-let DefaultIcon = L.icon({
-    iconUrl: icon,
-    shadowUrl: iconShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41]
-});
-
-L.Marker.prototype.options.icon = DefaultIcon;
-
+import { defaultIcon, getRandomIcon } from './marker-icons';
 
 interface PantryMapProps {
   pantries: Pantry[];
+  onViewDetails: (pantry: Pantry) => void;
 }
 
-export function PantryMap({ pantries = [] }: PantryMapProps) {
-  const navigate = useNavigate();
+export function PantryMap({ pantries = [], onViewDetails }: PantryMapProps) {
+  const markerRefs = React.useRef<{ [key: number]: L.Marker | null }>({});
 
-  const handleMarkerClick = (pantryId: number) => {
-    navigate(`/pantry/${pantryId}`);
+  const handleMarkerClick = (pantry: Pantry) => {
+    const marker = markerRefs.current[pantry.id];
+    if (marker) {
+      marker.setIcon(getRandomIcon());
+    }
   };
 
   return (
@@ -45,13 +33,25 @@ export function PantryMap({ pantries = [] }: PantryMapProps) {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       {pantries.map(pantry => (
-        <Marker key={pantry.id} position={[pantry.lat, pantry.lng]}>
+        <Marker
+          key={pantry.id}
+          position={[pantry.lat, pantry.lng]}
+          icon={defaultIcon}
+          ref={el => markerRefs.current[pantry.id] = el}
+          eventHandlers={{
+            click: () => handleMarkerClick(pantry),
+          }}
+        >
           <Popup>
             <div className="font-sans bg-black text-white p-2 rounded-md">
               <h3 className="font-bold text-base mb-1">{pantry.name}</h3>
               <p className="text-sm text-slate-300 m-0">{pantry.address}</p>
               <p className="text-sm text-slate-100 mt-2 m-0">{pantry.notes}</p>
-              <Button variant="outline" size="sm" className="mt-2 w-full text-white border-white hover:bg-gray-800 hover:text-white" onClick={() => handleMarkerClick(pantry.id)}>
+              <Button
+                size="sm"
+                className="mt-2 w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                onClick={() => onViewDetails(pantry)}
+              >
                 View Details
               </Button>
             </div>
