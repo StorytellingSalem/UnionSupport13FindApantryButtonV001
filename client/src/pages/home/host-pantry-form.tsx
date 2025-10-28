@@ -122,6 +122,9 @@ export function HostPantryForm({ onSubmit, isDialog = true }: HostPantryFormProp
           </Label>
           <div className="col-span-3">
             <Input id="lat" name="lat" type="number" step="any" placeholder="e.g. 40.7128" className="w-full" value={lat} onChange={e => setLat(e.target.value)} required />
+             <p className="text-xs text-muted-foreground mt-1">
+              Latitude & longitude are used to add markers to the map.
+            </p>
           </div>
         </div>
         <div className="grid grid-cols-4 items-start gap-4">
@@ -130,6 +133,9 @@ export function HostPantryForm({ onSubmit, isDialog = true }: HostPantryFormProp
           </Label>
           <div className="col-span-3">
             <Input id="lng" name="lng" type="number" step="any" placeholder="e.g. -74.0060" className="w-full" value={lng} onChange={e => setLng(e.target.value)} required />
+            <p className="text-xs text-muted-foreground mt-1">
+              Latitude & longitude are used to add markers to the map.
+            </p>
           </div>
         </div>
 
