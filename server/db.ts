@@ -32,6 +32,7 @@ interface PoliticianTable {
   term_end_date: string;
   lat: number;
   lng: number;
+  website: string | null;
 }
 
 interface CandidateTable {
@@ -43,6 +44,7 @@ interface CandidateTable {
   party: string;
   lat: number;
   lng: number;
+  website: string | null;
 }
 
 const dialect = new SqliteDialect({

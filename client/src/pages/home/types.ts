@@ -25,6 +25,7 @@ export interface Politician {
   term_end_date: string;
   lat: number;
   lng: number;
+  website?: string;
 }
 
 export interface Candidate {
@@ -36,4 +37,5 @@ export interface Candidate {
   party: string;
   lat: number;
   lng: number;
+  website?: string;
 }

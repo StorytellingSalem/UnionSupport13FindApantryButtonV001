@@ -63,8 +63,8 @@ export function PantryMap({ pantries = [], politicians = [], candidates = [], on
           }}
         >
           {!isPreview && (
-            <Popup>
-              <div className="font-sans p-2 rounded-md">
+            <Popup className="popup-dark">
+              <div className="p-2">
                 <h3 className="font-bold text-base mb-1">{pantry.name}</h3>
                 <p className="text-sm text-muted-foreground m-0">{pantry.address}</p>
                 <p className="text-sm mt-2 m-0">{pantry.notes}</p>
@@ -86,11 +86,16 @@ export function PantryMap({ pantries = [], politicians = [], candidates = [], on
           position={[politician.lat, politician.lng]}
           icon={getIconForPolitician(politician)}
         >
-          <Popup>
-            <div className="font-sans p-2 rounded-md">
-              <h3 className="font-bold text-base mb-1">{politician.name}</h3>
+          <Popup className="popup-dark">
+            <div className="p-2 space-y-1">
+              <h3 className="font-bold text-base">{politician.name}</h3>
               <p className="text-sm m-0">{politician.office} for {politician.state}{politician.district ? `-${politician.district}` : ''}</p>
-              <p className="text-xs text-muted-foreground m-0">In office until: {politician.term_end_date}</p>
+              <p className="text-xs m-0">Status: Currently in office</p>
+              {politician.website && (
+                <a href={politician.website} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 hover:text-blue-300 underline">
+                  Website
+                </a>
+              )}
             </div>
           </Popup>
         </Marker>
@@ -101,11 +106,16 @@ export function PantryMap({ pantries = [], politicians = [], candidates = [], on
           position={[candidate.lat, candidate.lng]}
           icon={getIconForCandidate(candidate)}
         >
-          <Popup>
-            <div className="font-sans p-2 rounded-md">
-              <h3 className="font-bold text-base mb-1">{candidate.name}</h3>
+          <Popup className="popup-dark">
+            <div className="p-2 space-y-1">
+              <h3 className="font-bold text-base">{candidate.name}</h3>
               <p className="text-sm m-0">Running for {candidate.office}</p>
               <p className="text-sm m-0">{candidate.state}{candidate.district ? `-${candidate.district}` : ''}</p>
+              {candidate.website && (
+                <a href={candidate.website} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 hover:text-blue-300 underline">
+                  Website
+                </a>
+              )}
             </div>
           </Popup>
         </Marker>

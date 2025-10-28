@@ -2,10 +2,10 @@
 <!--
 AI PROMPT TO RECREATE THIS FEATURE IN HTML, CSS, JS, SQL, PHP:
 
-**Objective:** Create a comprehensive, single-page web application feature called "PantryFinder". This tool allows users to find various local resources (pantries, political representatives) on an interactive map and submit new pantry locations. The entire feature should operate within a large modal window.
+**Objective:** Create a comprehensive, single-page web application feature called "PantryFinder". This tool allows users to find various local resources (pantries, political representatives) on an interactive map and submit new pantry locations. The entire feature should operate within a large modal window triggered from the main page.
 
 **Technology Stack:**
--   **Frontend:** Plain HTML5, CSS3, and JavaScript (ES6+).
+-   **Frontend:** Plain HTML5, CSS3, and JavaScript (ES6+). No frameworks.
 -   **Mapping Library:** Leaflet.js.
 -   **Backend:** PHP (latest stable version) for API endpoints.
 -   **Database:** MySQL or MariaDB.
@@ -26,7 +26,7 @@ Define three tables in your MySQL/MariaDB database.
     -   `notes` (TEXT)
     -   `type` (ENUM('food', 'clothing', 'resource', 'library'), NOT NULL)
     -   `repeating` (ENUM('one-time', 'daily', 'weekly', 'weekendly', 'monthly', 'idk'), NOT NULL)
-    -   `deleted` (BOOLEAN, DEFAULT 0) - Use this as a soft-delete flag.
+    -   `deleted` (BOOLEAN, DEFAULT 0) - Use this as a soft-delete flag. Entries with `deleted=1` should not be fetched by the API.
     -   `created_at` (TIMESTAMP, DEFAULT CURRENT_TIMESTAMP)
 
 2.  **`politicians` table:** Stores data for political representatives.
@@ -37,6 +37,7 @@ Define three tables in your MySQL/MariaDB database.
     -   `district` (INT, NULL) - `NULL` for Senators.
     -   `party` (VARCHAR(50))
     -   `term_end_date` (DATE)
+    -   `website` (VARCHAR(255), NULL)
     -   `lat` (DECIMAL(10, 8), NOT NULL)
     -   `lng` (DECIMAL(11, 8), NOT NULL)
 
@@ -47,6 +48,7 @@ Define three tables in your MySQL/MariaDB database.
     -   `state` (VARCHAR(2), NOT NULL)
     -   `district` (INT, NULL)
     -   `party` (VARCHAR(50))
+    -   `website` (VARCHAR(255), NULL)
     -   `lat` (DECIMAL(10, 8), NOT NULL)
     -   `lng` (DECIMAL(11, 8), NOT NULL)
 
@@ -58,14 +60,14 @@ Create a directory named `api` to house the PHP scripts. All endpoints must hand
 
 1.  **`data.php` (`GET`):** A versatile endpoint to fetch data.
     -   Accepts a `type` query parameter (e.g., `/api/data.php?type=pantries`).
-    -   If `type=pantries`, select all records from the `pantries` table where `deleted = 0`.
-    -   If `type=politicians`, select all records from the `politicians` table.
-    -   If `type=candidates`, select all records from the `candidates` table.
+    -   If `type=pantries`, `SELECT * FROM pantries WHERE deleted = 0`.
+    -   If `type=politicians`, `SELECT * FROM politicians`.
+    -   If `type=candidates`, `SELECT * FROM candidates`.
     -   Return the results as a JSON array.
 
 2.  **`pantry.php` (`POST`):** Handles new pantry submissions.
     -   Accepts a JSON payload with all required pantry fields.
-    -   Perform server-side validation to ensure all required fields are present and valid.
+    -   Perform server-side validation.
     -   Use prepared statements (e.g., with `mysqli` or `PDO`) to securely insert the data into the `pantries` table. This is critical for preventing SQL injection.
     -   Return the newly created pantry object (including its new `id`) as JSON with a `201 Created` status code.
 
@@ -74,26 +76,31 @@ Create a directory named `api` to house the PHP scripts. All endpoints must hand
     -   Make a server-to-server request to a free geocoding API like OpenStreetMap Nominatim. **Important:** Include a proper User-Agent header in your request as required by Nominatim's usage policy.
     -   Parse the response and return a JSON object containing `{ lat, lng }`.
 
+4.  **Cron Job Logic (Conceptual):**
+    -   A daily cron job should run a PHP script that handles expiring pantry listings.
+    -   `UPDATE pantries SET deleted = 1 WHERE repeating = 'one-time' AND created_at < DATE_SUB(NOW(), INTERVAL 1 WEEK);`
+    -   `UPDATE pantries SET deleted = 1 WHERE repeating = 'idk' AND created_at < DATE_SUB(NOW(), INTERVAL 1 MONTH);`
+
 ---
 
 ### **Part 3: Frontend Structure (HTML & CSS)**
 
 **1. Main Page (`index.html`):**
--   **Layout:** A centered, vertical layout.
--   **Buttons:** Two prominent buttons: "Find a Pantry" and "#13UnionSupportV001".
--   **Map Preview:** Below the buttons, include a small `div` for a map preview. This `div` should be about 75% smaller than the main modal map. It should be non-interactive (no zoom, drag, or popups).
+-   **Layout:** A centered, vertical layout with a dark gradient background (`bg-gradient-to-br from-background to-slate-900`).
+-   **Buttons:** Two prominent buttons: "Find a Pantry" (blue background) and "#13UnionSupportV001" (secondary/gray background).
+-   **Map Preview:** Below the buttons, include a small `div` for a map preview (e.g., `max-w-md h-48`). This `div` should be non-interactive (no zoom, drag, or popups) and have a semi-transparent overlay with text prompting users to click.
 -   **Modal Trigger:** Clicks on either of the buttons OR the map preview should trigger the main modal.
 
 **2. Main Modal (Dynamically shown/hidden with JS):**
--   **Styling:** The modal should be a large overlay (e.g., 90vw width, 90vh height) with a dark background and rounded corners.
+-   **Styling:** The modal should be a large overlay (e.g., 90vw width, 90vh height) with a dark background (`#0f172a`), light text, and rounded corners.
 -   **Layout:** A two-column layout using CSS Flexbox or Grid.
     -   **Left Column (Map):** Takes up 2/3 of the width. This will contain the Leaflet map.
-    -   **Right Column (Controls):** Takes up 1/3 of the width. This is the control panel.
+    -   **Right Column (Controls):** Takes up 1/3 of the width, with a border on its left. This is the control panel.
 
 **3. Styling (CSS):**
--   **Theme:** Implement a dark theme as the default and only theme. Use dark background colors (`#0f172a`), light text (`#f8fafc`), and blue for primary actions (`#3b82f6`).
--   **Responsiveness:** Ensure the layout adapts gracefully to smaller screens. On mobile, the two columns in the modal might stack vertically.
--   **Leaflet Popups:** Style the Leaflet popups to match the dark theme (dark background, light text).
+-   **Theme:** Implement a dark theme as the default and only theme. Use dark background colors (`#0f172a`), light text (`#f8fafc`), and a bright blue for primary actions (`#3b82f6`).
+-   **Responsiveness:** Ensure the layout adapts gracefully to smaller screens. On mobile, the two columns in the modal should stack vertically.
+-   **Leaflet Popups:** Create a custom CSS class `popup-dark`. Apply this class to Leaflet `Popup` elements. Style it to have a black background, white text, and no extra padding around the content.
 
 ---
 
@@ -105,39 +112,43 @@ Create a directory named `api` to house the PHP scripts. All endpoints must hand
 
 **2. Map Logic (Leaflet.js):**
 -   **Initialization:** Create a Leaflet map instance in the left column of the modal, centered on the USA. Use OpenStreetMap tiles.
--   **Marker Icons:** Create custom `L.Icon` instances for each marker type with distinct colors:
+-   **Marker Icons:** Create custom `L.Icon` instances for each marker type with distinct colors using a public marker asset URL:
     -   Pantry (Food): Green
     -   Pantry (Clothing): Blue
     -   Pantry (Resource): Purple
     -   Pantry (Library): Black
-    -   Politician (House): Dark Gray
-    -   Politician (Senate): Light Gray
-    -   Candidate: Gold (add a CSS class for a glowing effect: `box-shadow: 0 0 15px gold;`).
--   **Marker Rendering:**
-    -   Write a function that takes an array of items (pantries, politicians, etc.) and adds them to the map.
-    -   Each marker should have a popup bound to it, displaying its details (name, address, etc.).
-    -   The pantry popups should include a "View Details" button.
+    -   Politician (House): Dark Gray (`grey`)
+    -   Politician (Senate): Black
+    -   Candidate: Gold (add a CSS class for a glowing effect: `filter: drop-shadow(0 0 5px gold);`).
+-   **Marker Rendering & Popups:**
+    -   Write a function that takes an array of items and adds them to the map.
+    -   **Pantry Popup:** Show name, address, notes, and a "View Details" button.
+    -   **Politician Popup:** Show name, office, state/district, "Status: Currently in office", and a clickable "Website" link (styled in blue) if a URL is present.
+    -   **Candidate Popup:** Show name, office, state/district, and a clickable "Website" link (styled in blue) if a URL is present.
 -   **Filtering:** Create a master function `updateMapMarkers()` that clears all existing markers and re-renders only the ones that match the currently selected categories in the "Find a Pantry" view.
 
 **3. Control Panel Logic:**
 -   **View Switching:** The "Find a Pantry" and "Know-of a Pantry?" buttons should toggle the visibility of the corresponding views within the control panel.
 -   **"Find a Pantry" View:**
     -   **Category Checkboxes:** Attach event listeners to the category checkboxes. When a checkbox state changes, update a global array of selected categories and call `updateMapMarkers()`.
-    -   **Location Filtering:** The country and state radio buttons are for UI display; implementing the geographic filtering logic is a next step.
+    -   **Location Filtering:** The country list must have "Canada", "Mexico", "USA" at the top, followed by an alphabetical list of all other countries.
 -   **"Host a Pantry" Form:**
     -   **AI Geo-Finder:** The "magic wand" button next to the address input should trigger an async function that:
         1.  Takes the text from the address input.
         2.  Calls your `/api/geocode.php` endpoint.
         3.  Populates the Latitude and Longitude input fields with the response.
+    -   **Field Subtext:** Under the Latitude and Longitude input boxes, add the descriptive text: "Latitude & longitude are used to add markers to the map."
     -   **Form Submission:**
         1.  Add a `submit` event listener to the form.
         2.  Prevent the default form submission.
         3.  Create a JavaScript object from the form data.
         4.  `POST` this object as JSON to `/api/pantry.php`.
         5.  On a successful response, add the new pantry to your local data array, switch the view back to "Find a Pantry", and call `updateMapMarkers()` to show the new pin.
+    -   **Footer Link:** To the left of the "Submit" button, include a hyperlink: "Get a Poster- Help UnionSupport#13 Do More".
 -   **"Pantry Details" View:**
     -   When the "View Details" button in a pantry's popup is clicked, switch the control panel to a "Details" view.
     -   This view should display all information for the selected pantry (name, address, hours, notes, type, repeating).
+    -   Include a "Vouched for?" section with non-functional Thumbs Up/Down buttons.
 -->
 <!doctype html>
 <html lang="en">
