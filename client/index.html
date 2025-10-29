@@ -105,11 +105,11 @@ Create a directory named `api` to house the PHP scripts. All endpoints must hand
 -   **Styling:** A large overlay (90vw width, 90vh height) with a dark background (`#0f172a`), light text, and rounded corners.
 -   **Layout:** A two-column layout.
     -   **Left Column (Map):** Takes up 2/3 of the width for the Leaflet map.
-    -   **Right Column (Controls):** Takes up 1/3 of the width, with a border. This is the control panel.
+    -   **Right Column (Controls):** Takes up 1/3 of the width, with a border. This is the control panel. It must be vertically scrollable if its content overflows.
 
 **3. Styling (CSS):**
 -   **Theme:** Dark theme with dark backgrounds, light text, and bright blue for primary actions.
--   **Golden Elements:** Use a golden color (`#FFD700` or similar) for candidate-related UI elements (buttons, text) and a glowing effect.
+-   **Golden Elements:** Use a bright, vibrant golden color (`#FFD700`) for candidate-related UI elements (buttons, text) and a glowing effect. The "Running for Office?" button should use this color.
 -   **Responsiveness:** The modal's columns should stack vertically on mobile.
 -   **Leaflet Popups:** Custom `popup-dark` class for black background, white text popups.
 
@@ -125,7 +125,7 @@ Create a directory named `api` to house the PHP scripts. All endpoints must hand
 -   **Initialization:** Create a Leaflet map instance centered on the USA.
 -   **Marker Icons:** Create custom `L.Icon` instances for each marker type with distinct colors.
     -   Pantry (Food): Green, Clothing: Blue, Resource: Purple, Library: Black.
-    -   Politician (House): Dark Gray, Politician (Senate): Black.
+    -   Politician (House): Dark Gray, Politician (Senate): Black. Ensure two senator markers appear per state if data is available.
     -   Candidate: Gold (with a glowing CSS filter).
 -   **Marker Rendering & Popups:**
     -   **Politician Popup:** Show name, office, state/district. Instead of "Status: Currently in office", show a clickable link to their Ballotpedia page (e.g., `https://ballotpedia.org/NAME`).
@@ -135,13 +135,13 @@ Create a directory named `api` to house the PHP scripts. All endpoints must hand
 **3. Control Panel Logic:**
 -   **View Switching:** Buttons toggle between "Find a Pantry", "Host a Pantry", and "Running for Office?" views.
 -   **"Find a Pantry" View:**
-    -   **Category Checkboxes:** Main categories for filtering.
-    -   **Conditional Checkboxes:** When "Politicians..." is checked, show "Senator?" and "House of Representative?" checkboxes. When "Candidates..." is checked, show the same, but styled with golden text.
+    -   **Category Checkboxes:** Main categories for filtering. The entire panel must be scrollable to view all options.
+    -   **Conditional Checkboxes:** When "Politicians..." is checked, show "Senator?" and "House of Representative?" checkboxes. When "Candidates..." is checked, show the same, but styled with bright golden text.
 -   **"Host a Pantry" Form:**
     -   **AI Geo-Finder:** A "magic wand" button geocodes an address via `/api/geocode.php` and fills lat/lng fields.
     -   **Form Submission:** `POST` data to `/api/pantry.php`. On success, update the map.
 -   **"Running for Office?" Form:**
-    -   **Layout:** A new form triggered by a golden button.
+    -   **Layout:** A new form triggered by a bright golden button.
     -   **Fields:** Name, Country, State, Office Type (checkbox grid), optional Website, optional Phone Number.
     -   **Map Marker Toggle:** A checkbox "Want a marker of you running; placed on the map?".
     -   **Form Submission:** `POST` data to `/api/candidate.php`. On success, show a link to the state's ballot access requirements (e.g., `https://ballotpedia.org/Ballot_access_for_major_and_minor_party_candidates_in_STATE_NAME`).

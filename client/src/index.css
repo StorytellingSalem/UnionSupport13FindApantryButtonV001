@@ -112,11 +112,11 @@
 }
 
 .golden-button {
-  background-color: #DAA520;
+  background-color: #FFD700;
   color: black;
   font-weight: bold;
 }
 
 .golden-button:hover {
-  background-color: #B8860B;
+  background-color: #ffed4a;
 }

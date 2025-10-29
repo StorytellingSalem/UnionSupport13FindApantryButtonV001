@@ -16,7 +16,7 @@ const categoryTypes: { id: Category; label: string, className?: string }[] = [
     { id: 'clothing', label: 'Clothing Pantry?' },
     { id: 'resource', label: 'Resource' },
     { id: 'library', label: 'Mini-Library/Billboard?' },
-    { id: 'candidates', label: 'Candidates Running for Office', className: 'golden-text' },
+    { id: 'candidates', label: 'Candidates Running for Office', className: 'golden-text font-bold' },
     { id: 'politicians', label: 'Politicians who let the WH Fall still in office.' },
 ];
 
@@ -91,15 +91,15 @@ export function FindPantryView({
   const showCandidateFilters = selectedCategories.includes('candidates');
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
+    <div className="flex flex-col h-full">
+      <div className="flex justify-between items-center mb-4 flex-shrink-0">
         <h3 className="text-lg font-semibold">Find a Pantry</h3>
         <Button>Search</Button>
       </div>
-      <p className="text-sm text-muted-foreground mb-4">
+      <p className="text-sm text-muted-foreground mb-4 flex-shrink-0">
         Select countries and states/provinces to filter the map.
       </p>
-      <div className="space-y-4">
+      <div className="space-y-4 overflow-y-auto pr-2 flex-grow">
         <div>
           <h4 className="font-medium mb-2">Category</h4>
           <div className="grid grid-cols-1 gap-2">
@@ -140,7 +140,7 @@ export function FindPantryView({
                   checked={selectedCandidateOfficeTypes.includes(type.id)}
                   onCheckedChange={(checked) => handleOfficeTypeChange(type.id, !!checked, 'candidate')}
                 />
-                <Label htmlFor={`filter-candidate-type-${type.id}`} className="golden-text">{type.label}</Label>
+                <Label htmlFor={`filter-candidate-type-${type.id}`} className="golden-text font-bold">{type.label}</Label>
               </div>
             ))}
           </div>

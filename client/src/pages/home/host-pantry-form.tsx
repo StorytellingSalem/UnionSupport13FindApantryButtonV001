@@ -83,8 +83,8 @@ export function HostPantryForm({ onSubmit, isDialog = true }: HostPantryFormProp
   };
 
   const FormContent = (
-    <form onSubmit={handleSubmit}>
-      <div className="grid gap-4 py-4">
+    <form onSubmit={handleSubmit} className="flex flex-col h-full">
+      <div className="grid gap-4 py-4 overflow-y-auto pr-2 flex-grow">
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="name" className="text-right">
             Pantry Name
@@ -182,7 +182,7 @@ export function HostPantryForm({ onSubmit, isDialog = true }: HostPantryFormProp
         </div>
       </div>
       
-      <DialogFooter className="flex-row justify-between items-center">
+      <DialogFooter className="flex-row justify-between items-center flex-shrink-0">
         <a href="https://uminion.com/product/sister-union-13-2024-poster/" target="_blank" rel="noopener noreferrer" className="text-sm text-primary underline">
           Get a Poster- Help UnionSupport#13 Do More
         </a>
@@ -206,11 +206,13 @@ export function HostPantryForm({ onSubmit, isDialog = true }: HostPantryFormProp
   }
 
   return (
-    <div>
-      <h3 className="text-lg font-semibold">Host a Pantry</h3>
-      <p className="text-sm text-muted-foreground mb-4">
-        Fill out the details below to list a new food pantry.
-      </p>
+    <div className="flex flex-col h-full">
+      <div className="flex-shrink-0">
+        <h3 className="text-lg font-semibold">Host a Pantry</h3>
+        <p className="text-sm text-muted-foreground mb-4">
+          Fill out the details below to list a new food pantry.
+        </p>
+      </div>
       {FormContent}
     </div>
   );

@@ -85,12 +85,14 @@ export function RunningForOfficeForm({ onSubmit }: RunningForOfficeFormProps) {
   const states = selectedCountry ? countries[selectedCountry] || [] : [];
 
   return (
-    <div>
-      <h3 className="text-lg font-semibold golden-text">Running for Office?</h3>
-      <p className="text-sm text-muted-foreground mb-4">
-        Let us know who you are and what you're running for.
-      </p>
-      <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="flex flex-col h-full">
+      <div className="flex-shrink-0">
+        <h3 className="text-lg font-semibold golden-text">Running for Office?</h3>
+        <p className="text-sm text-muted-foreground mb-4">
+          Let us know who you are and what you're running for.
+        </p>
+      </div>
+      <form onSubmit={handleSubmit} className="space-y-6 overflow-y-auto pr-2 flex-grow">
         <div>
           <Label htmlFor="name">Name?</Label>
           <Input id="name" name="name" required />
