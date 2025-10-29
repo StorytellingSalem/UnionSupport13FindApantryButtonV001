@@ -105,7 +105,6 @@
 
 .golden-text {
   color: #FFD700;
-  text-shadow: 0 0 3px #FFD700;
 }
 
 .golden-glow {
@@ -113,11 +112,11 @@
 }
 
 .golden-button {
-  background-color: #F1C40F;
+  background-color: #DAA520;
   color: black;
   font-weight: bold;
 }
 
 .golden-button:hover {
-  background-color: #f39c12;
+  background-color: #B8860B;
 }
