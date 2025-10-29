@@ -45,6 +45,10 @@ interface CandidateTable {
   lat: number;
   lng: number;
   website: string | null;
+  phone: string | null;
+  show_on_map: 0 | 1;
+  office_type: string | null;
+  country: string | null;
 }
 
 const dialect = new SqliteDialect({

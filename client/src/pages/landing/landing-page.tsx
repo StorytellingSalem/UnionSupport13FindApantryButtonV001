@@ -3,15 +3,17 @@ import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { TheFoodPantryFeature } from '../pantry-feature/the-food-pantry-feature';
-import { Pantry } from '../home/types';
+import { Candidate, Pantry } from '../home/types';
 import { PantryMap } from '../home/map';
 
 interface LandingPageProps {
   pantries: Pantry[];
-  addPantry: (pantryData: Omit<Pantry, 'id'>) => Promise<Pantry | null>;
+  addPantry: (pantryData: Omit<Pantry, 'id' | 'deleted'>) => Promise<Pantry | null>;
+  candidates: Candidate[];
+  addCandidate: (candidateData: Omit<Candidate, 'id' | 'lat' | 'lng'>) => Promise<Candidate | null>;
 }
 
-export function LandingPage({ pantries, addPantry }: LandingPageProps) {
+export function LandingPage({ pantries, addPantry, candidates, addCandidate }: LandingPageProps) {
   const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   return (
@@ -40,7 +42,12 @@ export function LandingPage({ pantries, addPantry }: LandingPageProps) {
           <DialogHeader className="sr-only">
             <DialogTitle>Pantry Finder Feature</DialogTitle>
           </DialogHeader>
-          <TheFoodPantryFeature pantries={pantries} addPantry={addPantry} />
+          <TheFoodPantryFeature 
+            pantries={pantries} 
+            addPantry={addPantry}
+            initialCandidates={candidates}
+            addCandidate={addCandidate}
+          />
         </DialogContent>
       </Dialog>
     </div>

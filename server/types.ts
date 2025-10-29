@@ -29,7 +29,7 @@ export interface Politician {
 }
 
 export interface Candidate {
-  id: number;
+  id?: number;
   name: string;
   office: 'House' | 'Senate';
   state: string;
@@ -38,4 +38,8 @@ export interface Candidate {
   lat: number;
   lng: number;
   website?: string;
+  phone?: string;
+  show_on_map?: 0 | 1;
+  office_type?: string;
+  country?: string;
 }

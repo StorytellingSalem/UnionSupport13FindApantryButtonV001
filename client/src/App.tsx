@@ -1,15 +1,21 @@
 
 import * as React from 'react';
 import { LandingPage } from './pages/landing/landing-page';
-import { Pantry } from './pages/home/types';
+import { Candidate, Pantry } from './pages/home/types';
 
 function App() {
   const [pantries, setPantries] = React.useState<Pantry[]>([]);
+  const [candidates, setCandidates] = React.useState<Candidate[]>([]);
 
   React.useEffect(() => {
     fetch('/api/pantries')
       .then(res => res.json())
       .then(data => setPantries(data.filter(p => p.deleted === 0)))
+      .catch(console.error);
+    
+    fetch('/api/candidates')
+      .then(res => res.json())
+      .then(data => setCandidates(data))
       .catch(console.error);
   }, []);
 
@@ -28,15 +34,38 @@ function App() {
       return newPantry;
     } catch (error) {
       console.error(error);
-      // Optionally, handle the error in the UI
       return null;
     }
   };
 
-  // The router is removed as there is only one page now.
-  // If you need to add more pages, you can re-introduce react-router-dom
+  const addCandidate = async (candidateData: Omit<Candidate, 'id' | 'lat' | 'lng'>) => {
+    try {
+      const response = await fetch('/api/candidates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(candidateData),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to add candidate');
+      }
+      const newCandidate = await response.json();
+      if (newCandidate.show_on_map) {
+        setCandidates(prev => [...prev, newCandidate]);
+      }
+      return newCandidate;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+
   return (
-    <LandingPage pantries={pantries} addPantry={addPantry} />
+    <LandingPage 
+      pantries={pantries} 
+      addPantry={addPantry} 
+      candidates={candidates}
+      addCandidate={addCandidate}
+    />
   );
 }
 

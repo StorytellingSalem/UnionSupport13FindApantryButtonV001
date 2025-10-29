@@ -6,16 +6,23 @@ import { PantryType } from '../home/types';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { countries } from './countries-data';
+import { cn } from '@/lib/utils';
 
 export type Category = PantryType | 'candidates' | 'politicians';
+export type OfficeType = 'House' | 'Senate';
 
-const categoryTypes: { id: Category; label: string }[] = [
+const categoryTypes: { id: Category; label: string, className?: string }[] = [
     { id: 'food', label: 'Food Pantry?' },
     { id: 'clothing', label: 'Clothing Pantry?' },
     { id: 'resource', label: 'Resource' },
     { id: 'library', label: 'Mini-Library/Billboard?' },
-    { id: 'candidates', label: 'Candidates Running for Office' },
+    { id: 'candidates', label: 'Candidates Running for Office', className: 'golden-text' },
     { id: 'politicians', label: 'Politicians who let the WH Fall still in office.' },
+];
+
+const officeTypes: { id: OfficeType; label: string }[] = [
+    { id: 'Senate', label: 'Senator?' },
+    { id: 'House', label: 'House of Representative?' },
 ];
 
 const topCountries = ['Canada', 'Mexico', 'USA'];
@@ -27,9 +34,20 @@ const sortedCountryList = [
 interface FindPantryViewProps {
   selectedCategories: Category[];
   onCategoryChange: (categories: Category[]) => void;
+  selectedPoliticianOfficeTypes: OfficeType[];
+  onPoliticianOfficeTypeChange: (types: OfficeType[]) => void;
+  selectedCandidateOfficeTypes: OfficeType[];
+  onCandidateOfficeTypeChange: (types: OfficeType[]) => void;
 }
 
-export function FindPantryView({ selectedCategories, onCategoryChange }: FindPantryViewProps) {
+export function FindPantryView({ 
+  selectedCategories, 
+  onCategoryChange,
+  selectedPoliticianOfficeTypes,
+  onPoliticianOfficeTypeChange,
+  selectedCandidateOfficeTypes,
+  onCandidateOfficeTypeChange,
+}: FindPantryViewProps) {
   const [selectedCountry, setSelectedCountry] = React.useState<string | null>(null);
   const [selectedState, setSelectedState] = React.useState<string | null>(null);
 
@@ -38,6 +56,24 @@ export function FindPantryView({ selectedCategories, onCategoryChange }: FindPan
       ? [...selectedCategories, categoryId]
       : selectedCategories.filter(c => c !== categoryId);
     onCategoryChange(newCategories);
+  };
+
+  const handleOfficeTypeChange = (
+    officeType: OfficeType, 
+    checked: boolean, 
+    type: 'politician' | 'candidate'
+  ) => {
+    if (type === 'politician') {
+      const newTypes = checked
+        ? [...selectedPoliticianOfficeTypes, officeType]
+        : selectedPoliticianOfficeTypes.filter(t => t !== officeType);
+      onPoliticianOfficeTypeChange(newTypes);
+    } else {
+      const newTypes = checked
+        ? [...selectedCandidateOfficeTypes, officeType]
+        : selectedCandidateOfficeTypes.filter(t => t !== officeType);
+      onCandidateOfficeTypeChange(newTypes);
+    }
   };
 
   const handleCountryChange = (country: string) => {
@@ -51,6 +87,9 @@ export function FindPantryView({ selectedCategories, onCategoryChange }: FindPan
 
   const states = selectedCountry ? countries[selectedCountry] : [];
 
+  const showPoliticianFilters = selectedCategories.includes('politicians');
+  const showCandidateFilters = selectedCategories.includes('candidates');
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -63,7 +102,7 @@ export function FindPantryView({ selectedCategories, onCategoryChange }: FindPan
       <div className="space-y-4">
         <div>
           <h4 className="font-medium mb-2">Category</h4>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2">
             {categoryTypes.map(type => (
               <div key={type.id} className="flex items-center space-x-2">
                 <Checkbox 
@@ -71,14 +110,44 @@ export function FindPantryView({ selectedCategories, onCategoryChange }: FindPan
                   checked={selectedCategories.includes(type.id)}
                   onCheckedChange={(checked) => handleCategoryChange(type.id, !!checked)}
                 />
-                <Label htmlFor={`filter-type-${type.id}`}>{type.label}</Label>
+                <Label htmlFor={`filter-type-${type.id}`} className={type.className}>{type.label}</Label>
               </div>
             ))}
           </div>
         </div>
 
+        {showPoliticianFilters && (
+          <div className="pl-6 mt-2 space-y-2">
+            {officeTypes.map(type => (
+              <div key={`politician-${type.id}`} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`filter-politician-type-${type.id}`}
+                  checked={selectedPoliticianOfficeTypes.includes(type.id)}
+                  onCheckedChange={(checked) => handleOfficeTypeChange(type.id, !!checked, 'politician')}
+                />
+                <Label htmlFor={`filter-politician-type-${type.id}`}>{type.label}</Label>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {showCandidateFilters && (
+          <div className="pl-6 mt-2 space-y-2">
+            {officeTypes.map(type => (
+              <div key={`candidate-${type.id}`} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`filter-candidate-type-${type.id}`}
+                  checked={selectedCandidateOfficeTypes.includes(type.id)}
+                  onCheckedChange={(checked) => handleOfficeTypeChange(type.id, !!checked, 'candidate')}
+                />
+                <Label htmlFor={`filter-candidate-type-${type.id}`} className="golden-text">{type.label}</Label>
+              </div>
+            ))}
+          </div>
+        )}
+
         <div>
-          <h4 className="font-medium mb-2">Country</h4>
+          <h4 className="font-medium mb-2 mt-4">Country</h4>
           <div className="max-h-48 overflow-y-auto space-y-2 p-2 border rounded-md">
             <RadioGroup value={selectedCountry || ''} onValueChange={handleCountryChange}>
               {sortedCountryList.map(country => (
