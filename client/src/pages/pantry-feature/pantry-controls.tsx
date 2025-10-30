@@ -82,8 +82,8 @@ export function PantryControls({
   };
 
   return (
-    <div className="p-6 flex flex-col h-full">
-      <div className="flex-shrink-0">
+    <div className="p-6">
+      <div>
         <h2 className="text-2xl font-bold mb-4">PantryFinder</h2>
         <div className="space-y-4">
           <Button className="w-full" onClick={() => setActiveView('find')}>Find a Pantry</Button>
@@ -96,7 +96,7 @@ export function PantryControls({
         </div>
       </div>
 
-      <div className="mt-4 border-t pt-4 flex-grow overflow-y-auto">
+      <div className="mt-4 border-t pt-4">
         {renderActiveView()}
       </div>
     </div>
