@@ -40,6 +40,74 @@ export function PantryMap({ pantries = [], politicians = [], candidates = [], on
     return `https://ballotpedia.org/${formattedName}`;
   };
 
+  const getSenatorMarkers = () => {
+    if (!politicians) return [];
+    const senators = politicians.filter(p => p.office === 'Senate');
+    const markers: JSX.Element[] = [];
+    senators.forEach((senator, index) => {
+      // First senator marker
+      markers.push(
+        <Marker
+          key={`politician-${senator.id}-1`}
+          position={[senator.lat, senator.lng]}
+          icon={getIconForPolitician(senator)}
+        >
+          <Popup className="popup-dark">
+            <div className="p-2 space-y-1">
+              <h3 className="font-bold text-base">{senator.name}</h3>
+              <p className="text-sm m-0">{senator.office} for {senator.state}</p>
+              <a href={getBallotpediaUrl(senator.name)} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 hover:text-blue-300 underline">
+                View on Ballotpedia
+              </a>
+            </div>
+          </Popup>
+        </Marker>
+      );
+      // Second senator marker with a slight offset
+      markers.push(
+        <Marker
+          key={`politician-${senator.id}-2`}
+          position={[senator.lat + 0.01, senator.lng + 0.01]}
+          icon={getIconForPolitician(senator)}
+        >
+          <Popup className="popup-dark">
+            <div className="p-2 space-y-1">
+              <h3 className="font-bold text-base">{senator.name}</h3>
+              <p className="text-sm m-0">{senator.office} for {senator.state}</p>
+              <a href={getBallotpediaUrl(senator.name)} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 hover:text-blue-300 underline">
+                View on Ballotpedia
+              </a>
+            </div>
+          </Popup>
+        </Marker>
+      );
+    });
+    return markers;
+  };
+
+  const getHouseMarkers = () => {
+    if (!politicians) return [];
+    return politicians
+      .filter(p => p.office === 'House')
+      .map(politician => (
+        <Marker
+          key={`politician-${politician.id}`}
+          position={[politician.lat, politician.lng]}
+          icon={getIconForPolitician(politician)}
+        >
+          <Popup className="popup-dark">
+            <div className="p-2 space-y-1">
+              <h3 className="font-bold text-base">{politician.name}</h3>
+              <p className="text-sm m-0">{politician.office} for {politician.state}{politician.district ? `-${politician.district}` : ''}</p>
+              <a href={getBallotpediaUrl(politician.name)} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 hover:text-blue-300 underline">
+                View on Ballotpedia
+              </a>
+            </div>
+          </Popup>
+        </Marker>
+      ));
+  };
+
   return (
     <MapContainer
       ref={mapRef}
@@ -85,23 +153,8 @@ export function PantryMap({ pantries = [], politicians = [], candidates = [], on
           )}
         </Marker>
       ))}
-      {!isPreview && politicians.map(politician => (
-        <Marker
-          key={`politician-${politician.id}`}
-          position={[politician.lat, politician.lng]}
-          icon={getIconForPolitician(politician)}
-        >
-          <Popup className="popup-dark">
-            <div className="p-2 space-y-1">
-              <h3 className="font-bold text-base">{politician.name}</h3>
-              <p className="text-sm m-0">{politician.office} for {politician.state}{politician.district ? `-${politician.district}` : ''}</p>
-              <a href={getBallotpediaUrl(politician.name)} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 hover:text-blue-300 underline">
-                View on Ballotpedia
-              </a>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
+      {!isPreview && getHouseMarkers()}
+      {!isPreview && getSenatorMarkers()}
       {!isPreview && candidates.map(candidate => (
         <Marker
           key={`candidate-${candidate.id}`}

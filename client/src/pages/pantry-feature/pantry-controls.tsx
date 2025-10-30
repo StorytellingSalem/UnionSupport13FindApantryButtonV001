@@ -96,7 +96,7 @@ export function PantryControls({
         </div>
       </div>
 
-      <div className="mt-4 border-t pt-4 flex-grow overflow-hidden">
+      <div className="mt-4 border-t pt-4 flex-grow overflow-y-auto">
         {renderActiveView()}
       </div>
     </div>
