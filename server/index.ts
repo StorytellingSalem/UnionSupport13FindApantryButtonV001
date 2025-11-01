@@ -3,7 +3,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import { setupStaticServing } from './static-serve.js';
 import { db } from './db.js';
-import { Candidate, Pantry } from './types.js';
+import { Pantry } from './types.js';
 
 dotenv.config();
 
@@ -12,26 +12,6 @@ const app = express();
 // Body parsing middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Geocoding helper
-async function geocodeLocation(location: string): Promise<{ lat: number; lng: number } | null> {
-  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1`;
-  try {
-    const geoResponse = await fetch(url, {
-      headers: { 'User-Agent': 'PantryFinderApp/1.0' }
-    });
-    if (!geoResponse.ok) throw new Error(`Nominatim API failed with status: ${geoResponse.status}`);
-    const geoData = await geoResponse.json();
-    if (geoData && geoData.length > 0) {
-      const { lat, lon } = geoData[0];
-      return { lat: parseFloat(lat), lng: parseFloat(lon) };
-    }
-    return null;
-  } catch (error) {
-    console.error('Geocoding error:', error);
-    return null;
-  }
-}
 
 // API endpoints
 app.get('/api/pantries', async (req, res) => {
@@ -67,47 +47,11 @@ app.get('/api/politicians', async (req, res) => {
 
 app.get('/api/candidates', async (req, res) => {
   try {
-    const candidates = await db.selectFrom('candidates').selectAll().where('show_on_map', '=', 1).execute();
+    const candidates = await db.selectFrom('candidates').selectAll().execute();
     res.json(candidates);
   } catch (error) {
     console.error('Failed to get candidates:', error);
     res.status(500).json({ message: 'Failed to retrieve candidates' });
-  }
-});
-
-app.post('/api/candidates', async (req, res) => {
-  try {
-    const { name, country, state, office_type, website, phone, show_on_map } = req.body;
-
-    let coords = null;
-    if (show_on_map) {
-      coords = await geocodeLocation(`${state}, ${country}`);
-    }
-
-    const newCandidate: Omit<Candidate, 'id'> = {
-      name,
-      country,
-      state,
-      office: office_type?.includes('Senate') ? 'Senate' : 'House', // Simplified
-      office_type,
-      website,
-      phone,
-      show_on_map,
-      lat: coords?.lat ?? 0,
-      lng: coords?.lng ?? 0,
-      district: null,
-      party: '',
-    };
-
-    const result = await db.insertInto('candidates')
-      .values(newCandidate)
-      .returningAll()
-      .executeTakeFirstOrThrow();
-      
-    res.status(201).json(result);
-  } catch (error) {
-    console.error('Failed to add candidate:', error);
-    res.status(500).json({ message: 'Failed to add candidate' });
   }
 });
 
@@ -118,12 +62,30 @@ app.get('/api/geocode', async (req, res) => {
     return;
   }
   
-  const coords = await geocodeLocation(address);
+  // Using OpenStreetMap Nominatim for geocoding.
+  // It's free but has usage policies. For production, consider a dedicated service.
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`;
 
-  if (coords) {
-    res.json(coords);
-  } else {
-    res.status(404).json({ message: 'Coordinates not found' });
+  try {
+    const geoResponse = await fetch(url, {
+      headers: {
+        'User-Agent': 'PantryFinderApp/1.0' // Nominatim requires a User-Agent
+      }
+    });
+    if (!geoResponse.ok) {
+      throw new Error(`Nominatim API failed with status: ${geoResponse.status}`);
+    }
+    const geoData = await geoResponse.json();
+
+    if (geoData && geoData.length > 0) {
+      const { lat, lon } = geoData[0];
+      res.json({ lat: parseFloat(lat), lng: parseFloat(lon) });
+    } else {
+      res.status(404).json({ message: 'Coordinates not found' });
+    }
+  } catch (error) {
+    console.error('Geocoding error:', error);
+    res.status(500).json({ message: 'Geocoding service failed' });
   }
 });
 

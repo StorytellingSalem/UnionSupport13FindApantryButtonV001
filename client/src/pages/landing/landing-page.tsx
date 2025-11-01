@@ -1,39 +1,17 @@
-{/*
-  File: /client/src/pages/landing/landing-page.tsx
-  Folder: /client/src/pages/landing
 
-  Purpose:
-  This component represents the main landing page of the application. It displays the initial view with "Find a Pantry" and other buttons,
-  along with a non-interactive map preview. Its primary role is to trigger the main modal window where the core functionality of the application resides.
-
-  Connections:
-  - `@/components/ui/button`: Imports the reusable `Button` component.
-  - `@/components/ui/dialog`: Imports components (`Dialog`, `DialogContent`, etc.) to create the modal window.
-  - `../pantry-feature/the-food-pantry-feature`: This is the main feature component that gets rendered inside the modal. `LandingPage` passes the pantry and candidate data down to it.
-  - `../home/types`: Imports the `Pantry` and `Candidate` type definitions.
-  - `../home/map`: Imports the `PantryMap` component to show a preview map.
-  - `client/src/App.tsx`: This component is rendered by `App.tsx` and receives data (`pantries`, `candidates`) and functions (`addPantry`, `addCandidate`) as props.
-
-  PHP/HTML/CSS/JS/SQL Equivalent:
-  - HTML: The main body of an `index.html` page, containing the buttons and a `div` for the map preview. The modal would be a separate, hidden `div`.
-  - CSS: Styles for the page layout, buttons, map preview overlay, and the modal itself (positioning, appearance).
-  - JS: A script with click event listeners on the buttons and map preview to show the modal. It would also initialize the preview map.
-*/}
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { TheFoodPantryFeature } from '../pantry-feature/the-food-pantry-feature';
-import { Candidate, Pantry } from '../home/types';
+import { Pantry } from '../home/types';
 import { PantryMap } from '../home/map';
 
 interface LandingPageProps {
   pantries: Pantry[];
-  addPantry: (pantryData: Omit<Pantry, 'id' | 'deleted'>) => Promise<Pantry | null>;
-  candidates: Candidate[];
-  addCandidate: (candidateData: Omit<Candidate, 'id' | 'lat' | 'lng'>) => Promise<Candidate | null>;
+  addPantry: (pantryData: Omit<Pantry, 'id'>) => Promise<Pantry | null>;
 }
 
-export function LandingPage({ pantries, addPantry, candidates, addCandidate }: LandingPageProps) {
+export function LandingPage({ pantries, addPantry }: LandingPageProps) {
   const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   return (
@@ -62,24 +40,9 @@ export function LandingPage({ pantries, addPantry, candidates, addCandidate }: L
           <DialogHeader className="sr-only">
             <DialogTitle>Pantry Finder Feature</DialogTitle>
           </DialogHeader>
-          <TheFoodPantryFeature 
-            pantries={pantries} 
-            addPantry={addPantry}
-            initialCandidates={candidates}
-            addCandidate={addCandidate}
-          />
+          <TheFoodPantryFeature pantries={pantries} addPantry={addPantry} />
         </DialogContent>
       </Dialog>
     </div>
   );
 }
-{/*
-  Connections Summary:
-  - line 26: import { Button } from '@/components/ui/button'; -> Connects to `client/src/components/ui/button.tsx`.
-  - line 27: import { Dialog, DialogContent, ... } from '@/components/ui/dialog'; -> Connects to `client/src/components/ui/dialog.tsx`.
-  - line 28: import { TheFoodPantryFeature } from '../pantry-feature/the-food-pantry-feature'; -> Connects to `client/src/pages/pantry-feature/the-food-pantry-feature.tsx`.
-  - line 29: import { Candidate, Pantry } from '../home/types'; -> Connects to `client/src/pages/home/types.ts`.
-  - line 30: import { PantryMap } from '../home/map'; -> Connects to `client/src/pages/home/map.tsx`.
-  - line 51: Renders `<PantryMap />` for the preview.
-  - line 62: Renders `<TheFoodPantryFeature />` inside the dialog.
-*/}

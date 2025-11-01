@@ -1,23 +1,4 @@
 
-/*
-  File: /client/src/index.css
-  Folder: /client/src
-
-  Purpose:
-  This is the main global stylesheet for the application. It uses Tailwind CSS's `@tailwind` directives to inject base styles, component classes, and utility classes.
-  It also defines the CSS variables for the light and dark themes, which control the application's color palette.
-  Custom global styles, like those for the Leaflet map popups and golden-themed elements, are also defined here.
-
-  Connections:
-  - `client/src/main.tsx`: This CSS file is imported here, making its styles available to the entire React application.
-  - `tailwind.config.js`: The theme variables (`--background`, `--primary`, etc.) are used in this config file to define Tailwind's color palette.
-  - `client/src/pages/home/map.tsx`: The `.popup-dark` classes are used here to style the Leaflet map popups.
-  - Various components: The `.golden-text`, `.golden-glow`, and `.golden-button` classes are used for candidate-related UI elements.
-
-  PHP/HTML/CSS/JS/SQL Equivalent:
-  This is the direct equivalent of a main `style.css` file in a traditional web project. It contains all the global styles, theme definitions, and utility classes.
-*/
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -25,7 +6,7 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    --foreground: 0 0% 0%;
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
@@ -101,46 +82,35 @@
 }
 
 /* Leaflet popup dark theme */
-.popup-dark .leaflet-popup-content-wrapper {
-  @apply bg-black text-white rounded-lg shadow-lg;
+.leaflet-popup-content-wrapper {
+  background-color: #020817; /* slate-950 or similar dark color */
+  color: #f8fafc; /* slate-50 */
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
-.popup-dark .leaflet-popup-tip {
-  @apply bg-black;
+.leaflet-popup-tip-container {
+  width: 40px;
+  height: 20px;
 }
 
-.popup-dark .leaflet-popup-content {
-  margin: 14px !important;
-  padding: 1px !important;
+.leaflet-popup-tip {
+  background-color: #020817;
+  border: none;
+  box-shadow: none;
 }
 
-.popup-dark .leaflet-popup-close-button {
-  @apply text-white p-2;
+.leaflet-popup-content {
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
-.popup-dark .leaflet-popup-close-button:hover {
-  @apply bg-transparent text-gray-300;
+.leaflet-popup-close-button {
+  color: #f8fafc !important;
+  padding: 8px 8px 0 0 !important;
 }
 
-.golden-text {
-  color: #FFD700;
+.leaflet-popup-close-button:hover {
+  background-color: transparent !important;
+  color: #cbd5e1 !important;
 }
-
-.golden-glow {
-  filter: drop-shadow(0 0 5px #FFD700);
-}
-
-.golden-button {
-  background-color: #FFD700;
-  color: black;
-  font-weight: bold;
-}
-
-.golden-button:hover {
-  background-color: #ffed4a;
-}
-/*
-  Connections Summary:
-  - This file is globally imported in `client/src/main.tsx`.
-  - The CSS variables defined here are consumed by `tailwind.config.js`.
-*/
