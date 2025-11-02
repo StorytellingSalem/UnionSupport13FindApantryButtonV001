@@ -18,6 +18,12 @@ export function TheFoodPantryFeature({ pantries, addPantry }: TheFoodPantryFeatu
   const [politicians, setPoliticians] = React.useState<Politician[]>([]);
   const [candidates, setCandidates] = React.useState<Candidate[]>([]);
   const [selectedCategories, setSelectedCategories] = React.useState<Category[]>(['food', 'clothing', 'resource', 'library']);
+  const [filterOptions, setFilterOptions] = React.useState({
+    showPoliticianSenate: false,
+    showPoliticianHouse: false,
+    showCandidateSenate: false,
+    showCandidateHouse: false,
+  });
 
   React.useEffect(() => {
     fetch('/api/politicians')
@@ -37,21 +43,39 @@ export function TheFoodPantryFeature({ pantries, addPantry }: TheFoodPantryFeatu
   };
 
   const filteredPantries = pantries.filter(p => selectedCategories.includes(p.type));
-  const filteredPoliticians = selectedCategories.includes('politicians') ? politicians : [];
-  const filteredCandidates = selectedCategories.includes('candidates') ? candidates : [];
+  
+  const filteredPoliticians = selectedCategories.includes('politicians') 
+    ? politicians.filter(p => {
+        if (filterOptions.showPoliticianSenate && p.office === 'Senate') return true;
+        if (filterOptions.showPoliticianHouse && p.office === 'House') return true;
+        // If no sub-filters are checked, show all politicians
+        if (!filterOptions.showPoliticianSenate && !filterOptions.showPoliticianHouse) return true;
+        return false;
+      })
+    : [];
+
+  const filteredCandidates = selectedCategories.includes('candidates') 
+    ? candidates.filter(c => {
+        if (filterOptions.showCandidateSenate && c.office === 'Senate') return true;
+        if (filterOptions.showCandidateHouse && c.office === 'House') return true;
+        // If no sub-filters are checked, show all candidates
+        if (!filterOptions.showCandidateSenate && !filterOptions.showCandidateHouse) return true;
+        return false;
+      })
+    : [];
 
   return (
     <div className="flex h-full w-full bg-background">
-      <div className="w-1/6 h-full border-r overflow-y-auto p-4 flex flex-col gap-4">
-        <Button className="w-full" onClick={() => setActiveView('find')} variant={activeView === 'find' ? 'default' : 'secondary'}>
+      <div className="w-3/12 h-full border-r overflow-y-auto p-4 flex flex-col gap-4">
+        <Button className="w-full justify-start text-left" onClick={() => setActiveView('find')} variant={activeView === 'find' ? 'default' : 'secondary'}>
           Find a Pantry
         </Button>
-        <Button className="w-full" onClick={() => setActiveView('host')} variant={activeView === 'host' ? 'default' : 'secondary'}>
+        <Button className="w-full justify-start text-left whitespace-normal h-auto" onClick={() => setActiveView('host')} variant={activeView === 'host' ? 'default' : 'secondary'}>
           Know-of a Pantry? Host a Pantry?
         </Button>
         <Button 
           className={cn(
-            "w-full",
+            "w-full justify-start text-left",
             activeView === 'running' ? "bg-yellow-500 hover:bg-yellow-600 text-black" : "bg-yellow-400 hover:bg-yellow-500 text-black"
           )}
           onClick={() => setActiveView('running')}
@@ -59,7 +83,7 @@ export function TheFoodPantryFeature({ pantries, addPantry }: TheFoodPantryFeatu
           Running for Office?
         </Button>
       </div>
-      <div className="w-3/6 h-full">
+      <div className="w-5/12 h-full">
         <PantryMap 
           pantries={filteredPantries} 
           politicians={filteredPoliticians}
@@ -67,7 +91,7 @@ export function TheFoodPantryFeature({ pantries, addPantry }: TheFoodPantryFeatu
           onViewDetails={handleViewDetails} 
         />
       </div>
-      <div className="w-2/6 h-full border-l overflow-y-auto">
+      <div className="w-4/12 h-full border-l overflow-y-auto">
         <PantryControls 
           addPantry={addPantry} 
           activeView={activeView}
@@ -75,6 +99,8 @@ export function TheFoodPantryFeature({ pantries, addPantry }: TheFoodPantryFeatu
           selectedPantry={selectedPantry}
           selectedCategories={selectedCategories}
           onCategoryChange={setSelectedCategories}
+          filterOptions={filterOptions}
+          setFilterOptions={setFilterOptions}
         />
       </div>
     </div>

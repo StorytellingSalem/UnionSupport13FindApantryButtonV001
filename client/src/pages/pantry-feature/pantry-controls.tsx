@@ -13,9 +13,11 @@ interface PantryControlsProps {
   selectedPantry: Pantry | null;
   selectedCategories: Category[];
   onCategoryChange: (categories: Category[]) => void;
+  filterOptions: any;
+  setFilterOptions: React.Dispatch<React.SetStateAction<any>>;
 }
 
-export function PantryControls({ addPantry, activeView, setActiveView, selectedPantry, selectedCategories, onCategoryChange }: PantryControlsProps) {
+export function PantryControls({ addPantry, activeView, setActiveView, selectedPantry, selectedCategories, onCategoryChange, filterOptions, setFilterOptions }: PantryControlsProps) {
 
   const handleAddPantry = async (pantryData: Omit<Pantry, 'id' | 'deleted'>) => {
     const newPantry = await addPantry(pantryData);
@@ -27,7 +29,7 @@ export function PantryControls({ addPantry, activeView, setActiveView, selectedP
   const renderActiveView = () => {
     switch (activeView) {
       case 'find':
-        return <FindPantryView selectedCategories={selectedCategories} onCategoryChange={onCategoryChange} />;
+        return <FindPantryView selectedCategories={selectedCategories} onCategoryChange={onCategoryChange} filterOptions={filterOptions} setFilterOptions={setFilterOptions} />;
       case 'host':
         return <HostPantryForm onSubmit={handleAddPantry} isDialog={false} />;
       case 'details':
@@ -35,13 +37,13 @@ export function PantryControls({ addPantry, activeView, setActiveView, selectedP
       case 'running':
         return <RunningForOfficeForm />;
       default:
-        return <FindPantryView selectedCategories={selectedCategories} onCategoryChange={onCategoryChange} />;
+        return <FindPantryView selectedCategories={selectedCategories} onCategoryChange={onCategoryChange} filterOptions={filterOptions} setFilterOptions={setFilterOptions} />;
     }
   };
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">PantryFinder</h2>
+      {activeView !== 'find' && <h2 className="text-2xl font-bold mb-4">PantryFinder</h2>}
       <div className="space-y-4">
         {renderActiveView()}
       </div>

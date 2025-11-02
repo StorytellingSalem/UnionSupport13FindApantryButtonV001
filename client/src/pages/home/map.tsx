@@ -83,8 +83,10 @@ export function PantryMap({ pantries = [], politicians = [], candidates = [], on
       {!isPreview && politicians.map(politician => {
         let { lat, lng } = politician;
         // Add a small jitter to senator positions to avoid overlap
-        lat += (Math.random() - 0.5) * 0.1;
-        lng += (Math.random() - 0.5) * 0.1;
+        if (politician.office === 'Senate') {
+            lat += (Math.random() - 0.5) * 0.2;
+            lng += (Math.random() - 0.5) * 0.2;
+        }
         
         return (
           <Marker

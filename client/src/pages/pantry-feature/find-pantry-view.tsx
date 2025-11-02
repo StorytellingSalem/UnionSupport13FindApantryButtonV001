@@ -3,7 +3,6 @@ import * as React from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { PantryType } from '../home/types';
-import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { countries } from './countries-data';
 import { cn } from '@/lib/utils';
@@ -28,26 +27,26 @@ const sortedCountryList = [
 interface FindPantryViewProps {
   selectedCategories: Category[];
   onCategoryChange: (categories: Category[]) => void;
+  filterOptions: any;
+  setFilterOptions: React.Dispatch<React.SetStateAction<any>>;
 }
 
-export function FindPantryView({ selectedCategories, onCategoryChange }: FindPantryViewProps) {
+export function FindPantryView({ selectedCategories, onCategoryChange, filterOptions, setFilterOptions }: FindPantryViewProps) {
   const [selectedCountry, setSelectedCountry] = React.useState<string | null>(null);
   const [selectedState, setSelectedState] = React.useState<string | null>(null);
-  const [showPoliticianTypes, setShowPoliticianTypes] = React.useState(false);
-  const [showCandidateTypes, setShowCandidateTypes] = React.useState(false);
+  
+  const showPoliticianTypes = selectedCategories.includes('politicians');
+  const showCandidateTypes = selectedCategories.includes('candidates');
 
   const handleCategoryChange = (categoryId: Category, checked: boolean) => {
     const newCategories = checked
       ? [...selectedCategories, categoryId]
       : selectedCategories.filter(c => c !== categoryId);
     onCategoryChange(newCategories);
+  };
 
-    if (categoryId === 'politicians') {
-      setShowPoliticianTypes(checked);
-    }
-    if (categoryId === 'candidates') {
-      setShowCandidateTypes(checked);
-    }
+  const handleFilterOptionChange = (option: string, checked: boolean) => {
+    setFilterOptions(prev => ({ ...prev, [option]: checked }));
   };
 
   const handleCountryChange = (country: string) => {
@@ -63,13 +62,6 @@ export function FindPantryView({ selectedCategories, onCategoryChange }: FindPan
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold">Find a Pantry</h3>
-        <Button>Search</Button>
-      </div>
-      <p className="text-sm text-muted-foreground mb-4">
-        Select countries and states/provinces to filter the map.
-      </p>
       <div className="space-y-4">
         <div>
           <h4 className="font-medium mb-2">Category</h4>
@@ -87,11 +79,11 @@ export function FindPantryView({ selectedCategories, onCategoryChange }: FindPan
              {showPoliticianTypes && (
               <div className="pl-6 mt-2 space-y-2">
                 <div className="flex items-center space-x-2">
-                  <Checkbox id="filter-politician-senate" />
+                  <Checkbox id="filter-politician-senate" onCheckedChange={(checked) => handleFilterOptionChange('showPoliticianSenate', !!checked)} />
                   <Label htmlFor="filter-politician-senate">Senator?</Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Checkbox id="filter-politician-house" />
+                  <Checkbox id="filter-politician-house" onCheckedChange={(checked) => handleFilterOptionChange('showPoliticianHouse', !!checked)} />
                   <Label htmlFor="filter-politician-house">House of Representative?</Label>
                 </div>
               </div>
@@ -99,11 +91,11 @@ export function FindPantryView({ selectedCategories, onCategoryChange }: FindPan
             {showCandidateTypes && (
               <div className="pl-6 mt-2 space-y-2">
                 <div className="flex items-center space-x-2">
-                  <Checkbox id="filter-candidate-senate" />
+                  <Checkbox id="filter-candidate-senate" onCheckedChange={(checked) => handleFilterOptionChange('showCandidateSenate', !!checked)} />
                   <Label htmlFor="filter-candidate-senate" className="text-yellow-400 font-bold">Senator?</Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Checkbox id="filter-candidate-house" />
+                  <Checkbox id="filter-candidate-house" onCheckedChange={(checked) => handleFilterOptionChange('showCandidateHouse', !!checked)} />
                   <Label htmlFor="filter-candidate-house" className="text-yellow-400 font-bold">House of Representative?</Label>
                 </div>
               </div>
