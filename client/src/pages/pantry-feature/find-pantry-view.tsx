@@ -6,15 +6,16 @@ import { PantryType } from '../home/types';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { countries } from './countries-data';
+import { cn } from '@/lib/utils';
 
 export type Category = PantryType | 'candidates' | 'politicians';
 
-const categoryTypes: { id: Category; label: string }[] = [
+const categoryTypes: { id: Category; label: string, className?: string }[] = [
     { id: 'food', label: 'Food Pantry?' },
     { id: 'clothing', label: 'Clothing Pantry?' },
     { id: 'resource', label: 'Resource' },
     { id: 'library', label: 'Mini-Library/Billboard?' },
-    { id: 'candidates', label: 'Candidates Running for Office' },
+    { id: 'candidates', label: 'Candidates Running for Office', className: 'text-yellow-400 font-bold' },
     { id: 'politicians', label: 'Politicians who let the WH Fall still in office.' },
 ];
 
@@ -32,12 +33,21 @@ interface FindPantryViewProps {
 export function FindPantryView({ selectedCategories, onCategoryChange }: FindPantryViewProps) {
   const [selectedCountry, setSelectedCountry] = React.useState<string | null>(null);
   const [selectedState, setSelectedState] = React.useState<string | null>(null);
+  const [showPoliticianTypes, setShowPoliticianTypes] = React.useState(false);
+  const [showCandidateTypes, setShowCandidateTypes] = React.useState(false);
 
   const handleCategoryChange = (categoryId: Category, checked: boolean) => {
     const newCategories = checked
       ? [...selectedCategories, categoryId]
       : selectedCategories.filter(c => c !== categoryId);
     onCategoryChange(newCategories);
+
+    if (categoryId === 'politicians') {
+      setShowPoliticianTypes(checked);
+    }
+    if (categoryId === 'candidates') {
+      setShowCandidateTypes(checked);
+    }
   };
 
   const handleCountryChange = (country: string) => {
@@ -63,7 +73,7 @@ export function FindPantryView({ selectedCategories, onCategoryChange }: FindPan
       <div className="space-y-4">
         <div>
           <h4 className="font-medium mb-2">Category</h4>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2">
             {categoryTypes.map(type => (
               <div key={type.id} className="flex items-center space-x-2">
                 <Checkbox 
@@ -71,9 +81,33 @@ export function FindPantryView({ selectedCategories, onCategoryChange }: FindPan
                   checked={selectedCategories.includes(type.id)}
                   onCheckedChange={(checked) => handleCategoryChange(type.id, !!checked)}
                 />
-                <Label htmlFor={`filter-type-${type.id}`}>{type.label}</Label>
+                <Label htmlFor={`filter-type-${type.id}`} className={cn(type.className)}>{type.label}</Label>
               </div>
             ))}
+             {showPoliticianTypes && (
+              <div className="pl-6 mt-2 space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="filter-politician-senate" />
+                  <Label htmlFor="filter-politician-senate">Senator?</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="filter-politician-house" />
+                  <Label htmlFor="filter-politician-house">House of Representative?</Label>
+                </div>
+              </div>
+            )}
+            {showCandidateTypes && (
+              <div className="pl-6 mt-2 space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="filter-candidate-senate" />
+                  <Label htmlFor="filter-candidate-senate" className="text-yellow-400 font-bold">Senator?</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="filter-candidate-house" />
+                  <Label htmlFor="filter-candidate-house" className="text-yellow-400 font-bold">House of Representative?</Label>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

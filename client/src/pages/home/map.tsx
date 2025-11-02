@@ -80,21 +80,28 @@ export function PantryMap({ pantries = [], politicians = [], candidates = [], on
           )}
         </Marker>
       ))}
-      {!isPreview && politicians.map(politician => (
-        <Marker
-          key={`politician-${politician.id}`}
-          position={[politician.lat, politician.lng]}
-          icon={getIconForPolitician(politician)}
-        >
-          <Popup>
-            <div className="font-sans p-2 rounded-md">
-              <h3 className="font-bold text-base mb-1">{politician.name}</h3>
-              <p className="text-sm m-0">{politician.office} for {politician.state}{politician.district ? `-${politician.district}` : ''}</p>
-              <p className="text-xs text-muted-foreground m-0">In office until: {politician.term_end_date}</p>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
+      {!isPreview && politicians.map(politician => {
+        let { lat, lng } = politician;
+        // Add a small jitter to senator positions to avoid overlap
+        lat += (Math.random() - 0.5) * 0.1;
+        lng += (Math.random() - 0.5) * 0.1;
+        
+        return (
+          <Marker
+            key={`politician-${politician.id}`}
+            position={[lat, lng]}
+            icon={getIconForPolitician(politician)}
+          >
+            <Popup>
+              <div className="font-sans p-2 rounded-md">
+                <h3 className="font-bold text-base mb-1">{politician.name}</h3>
+                <p className="text-sm m-0">{politician.office} for {politician.state}{politician.district ? `-${politician.district}` : ''}</p>
+                <p className="text-xs text-muted-foreground m-0">In office until: {politician.term_end_date}</p>
+              </div>
+            </Popup>
+          </Marker>
+        );
+      })}
       {!isPreview && candidates.map(candidate => (
         <Marker
           key={`candidate-${candidate.id}`}
@@ -106,6 +113,9 @@ export function PantryMap({ pantries = [], politicians = [], candidates = [], on
               <h3 className="font-bold text-base mb-1">{candidate.name}</h3>
               <p className="text-sm m-0">Running for {candidate.office}</p>
               <p className="text-sm m-0">{candidate.state}{candidate.district ? `-${candidate.district}` : ''}</p>
+              <a href="https://uminion.com" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline text-sm">
+                Website
+              </a>
             </div>
           </Popup>
         </Marker>

@@ -4,6 +4,8 @@ import { PantryMap } from '../home/map';
 import { PantryControls } from './pantry-controls';
 import { Candidate, Pantry, Politician } from '../home/types';
 import { Category } from './find-pantry-view';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface TheFoodPantryFeatureProps {
   pantries: Pantry[];
@@ -11,7 +13,7 @@ interface TheFoodPantryFeatureProps {
 }
 
 export function TheFoodPantryFeature({ pantries, addPantry }: TheFoodPantryFeatureProps) {
-  const [activeView, setActiveView] = React.useState<'find' | 'host' | 'details'>('find');
+  const [activeView, setActiveView] = React.useState<'find' | 'host' | 'details' | 'running'>('find');
   const [selectedPantry, setSelectedPantry] = React.useState<Pantry | null>(null);
   const [politicians, setPoliticians] = React.useState<Politician[]>([]);
   const [candidates, setCandidates] = React.useState<Candidate[]>([]);
@@ -40,7 +42,24 @@ export function TheFoodPantryFeature({ pantries, addPantry }: TheFoodPantryFeatu
 
   return (
     <div className="flex h-full w-full bg-background">
-      <div className="w-2/3 h-full">
+      <div className="w-1/6 h-full border-r overflow-y-auto p-4 flex flex-col gap-4">
+        <Button className="w-full" onClick={() => setActiveView('find')} variant={activeView === 'find' ? 'default' : 'secondary'}>
+          Find a Pantry
+        </Button>
+        <Button className="w-full" onClick={() => setActiveView('host')} variant={activeView === 'host' ? 'default' : 'secondary'}>
+          Know-of a Pantry? Host a Pantry?
+        </Button>
+        <Button 
+          className={cn(
+            "w-full",
+            activeView === 'running' ? "bg-yellow-500 hover:bg-yellow-600 text-black" : "bg-yellow-400 hover:bg-yellow-500 text-black"
+          )}
+          onClick={() => setActiveView('running')}
+        >
+          Running for Office?
+        </Button>
+      </div>
+      <div className="w-3/6 h-full">
         <PantryMap 
           pantries={filteredPantries} 
           politicians={filteredPoliticians}
@@ -48,7 +67,7 @@ export function TheFoodPantryFeature({ pantries, addPantry }: TheFoodPantryFeatu
           onViewDetails={handleViewDetails} 
         />
       </div>
-      <div className="w-1/3 h-full border-l overflow-y-auto">
+      <div className="w-2/6 h-full border-l overflow-y-auto">
         <PantryControls 
           addPantry={addPantry} 
           activeView={activeView}
