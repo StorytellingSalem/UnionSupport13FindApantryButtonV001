@@ -17,6 +17,16 @@ interface PantryMapProps {
 export function PantryMap({ pantries = [], politicians = [], candidates = [], onViewDetails, isPreview = false }: PantryMapProps) {
   const mapRef = React.useRef<L.Map>(null);
   const markerRefs = React.useRef<{ [key: string]: L.Marker | null }>({});
+  
+  React.useEffect(() => {
+    const senators = politicians.filter(p => p.office === 'Senate');
+    console.log('Map rendering - Politicians:', politicians.length, 'Senators:', senators.length);
+    const stateCount: { [key: string]: number } = {};
+    senators.forEach(s => {
+      stateCount[s.state] = (stateCount[s.state] || 0) + 1;
+    });
+    console.log('Map - Senators per state:', stateCount);
+  }, [politicians]);
 
   const handleMarkerClick = (pantry: Pantry) => {
     if (isPreview) return;

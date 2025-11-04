@@ -38,6 +38,20 @@ app.post('/api/pantries', async (req, res) => {
 app.get('/api/politicians', async (req, res) => {
   try {
     const politicians = await db.selectFrom('politicians').selectAll().execute();
+    console.log('Politicians query returned:', politicians.length, 'records');
+    
+    // Debug: List all senators
+    const senators = politicians.filter(p => p.office === 'Senate');
+    console.log('Senators count:', senators.length);
+    console.log('Senators by state:');
+    const stateCount: { [key: string]: number } = {};
+    senators.forEach(s => {
+      stateCount[s.state] = (stateCount[s.state] || 0) + 1;
+      console.log(`  ID:${s.id} Name:${s.name} State:${s.state}`);
+    });
+    console.log('Senators per state:', stateCount);
+    
+    // Return with full data
     res.json(politicians);
   } catch (error) {
     console.error('Failed to get politicians:', error);

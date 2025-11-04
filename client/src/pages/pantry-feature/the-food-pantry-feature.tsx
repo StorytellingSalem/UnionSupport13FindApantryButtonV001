@@ -25,17 +25,22 @@ export function TheFoodPantryFeature({ pantries, addPantry }: TheFoodPantryFeatu
     showCandidateHouse: false,
   });
 
-  React.useEffect(() => {
-    fetch('/api/politicians')
-      .then(res => res.json())
-      .then(data => setPoliticians(data))
-      .catch(console.error);
-    
-    fetch('/api/candidates')
-      .then(res => res.json())
-      .then(data => setCandidates(data))
-      .catch(console.error);
-  }, []);
+   React.useEffect(() => {
+     fetch('/api/politicians')
+       .then(res => res.json())
+       .then(data => {
+         console.log('Fetched politicians:', data.length, 'total');
+         const senatorsCount = data.filter((p: Politician) => p.office === 'Senate').length;
+         console.log('Senators count:', senatorsCount);
+         setPoliticians(data);
+       })
+       .catch(console.error);
+     
+     fetch('/api/candidates')
+       .then(res => res.json())
+       .then(data => setCandidates(data))
+       .catch(console.error);
+   }, []);
 
   const handleViewDetails = (pantry: Pantry) => {
     setSelectedPantry(pantry);
@@ -53,6 +58,16 @@ export function TheFoodPantryFeature({ pantries, addPantry }: TheFoodPantryFeatu
         return false;
       })
     : [];
+  
+  React.useEffect(() => {
+    const senators = filteredPoliticians.filter(p => p.office === 'Senate');
+    console.log('Filtered politicians - total:', filteredPoliticians.length, 'senators:', senators.length);
+    const stateCount: { [key: string]: number } = {};
+    senators.forEach(s => {
+      stateCount[s.state] = (stateCount[s.state] || 0) + 1;
+    });
+    console.log('Senators per state:', stateCount);
+  }, [filteredPoliticians]);
 
   const filteredCandidates = selectedCategories.includes('candidates') 
     ? candidates.filter(c => {
