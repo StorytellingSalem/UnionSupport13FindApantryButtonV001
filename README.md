@@ -15,6 +15,20 @@ This is a full-stack Node.js + React application for finding and managing food p
 - **Database Location**: `/data/database.sqlite`
 - **Persistent Storage**: Volume mount required for `/data/` directory
 
+<!-- For Future Upgrade use; uncomment this: -->
+<!-- ### MySQL Database (Future Upgrade)
+- **MySQL**: 5.7 or 8.0+
+- **Database Host**: Configurable via environment variable
+- **Database Port**: Default 3306
+- **Driver**: mysql2 or mysql package -->
+
+<!-- For Future Upgrade use; uncomment this: -->
+<!-- ### Docker Requirements
+- **Docker**: 20.10+
+- **Docker Compose**: 1.29+
+- **Container Runtime**: Linux kernel 4.4+ recommended -->
+
+
 ## Dependencies & Package.json
 
 ### Production Dependencies
@@ -212,6 +226,64 @@ PORT=3002 npm start
 **Build fails**
 - Clear cache: `rm -rf node_modules && npm install`
 - Check Node.js version: `node --version`
+
+<!-- For Future Upgrade use; uncomment this: -->
+<!-- ## Docker Compose Configuration (Future Upgrade)
+
+```yaml
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATA_DIRECTORY: /app/data/
+    volumes:
+      - app_data:/app/data/
+    restart: unless-stopped
+
+  # For MySQL integration (Future Upgrade)
+  # mysql:
+  #   image: mysql:8.0
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: root_password
+  #     MYSQL_DATABASE: food_pantry_db
+  #   volumes:
+  #     - mysql_data:/var/lib/mysql
+  #   ports:
+  #     - "3306:3306"
+  #   restart: unless-stopped
+
+volumes:
+  app_data:
+    driver: local
+  # mysql_data:
+  #   driver: local
+```
+
+### Docker Volumes Explanation
+- `app_data` - Persistent storage for SQLite database and uploads
+- `mysql_data` - (Future) MySQL data directory for database persistence
+
+### Running with Docker Compose
+```bash
+docker-compose up -d
+docker-compose logs -f app
+docker-compose down  # To stop
+```
+
+### Volume Management
+```bash
+# Backup data volume
+docker run --rm -v app_data:/data -v $(pwd):/backup alpine tar czf /backup/app_data_backup.tar.gz -C /data .
+
+# Restore data volume
+docker run --rm -v app_data:/data -v $(pwd):/backup alpine tar xzf /backup/app_data_backup.tar.gz -C /data
+``` -->
 
 ## License
 Private project - all rights reserved
