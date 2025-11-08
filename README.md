@@ -285,5 +285,410 @@ docker run --rm -v app_data:/data -v $(pwd):/backup alpine tar czf /backup/app_d
 docker run --rm -v app_data:/data -v $(pwd):/backup alpine tar xzf /backup/app_data_backup.tar.gz -C /data
 ``` -->
 
+## Windows Development Setup with Docker & GitHub Deployment
+
+### Prerequisites for Windows
+1. **Install Git for Windows**
+   - Download from https://git-scm.com/download/win
+   - Select "Git Bash Here" during installation
+   - Verify: Open PowerShell and run `git --version`
+
+2. **Install Visual Studio Code**
+   - Download from https://code.visualstudio.com/
+   - Install the following extensions:
+     - Remote - Containers (Microsoft)
+     - Docker (Microsoft)
+     - Git Graph (mhutchie)
+     - ES7+ React/Redux/React-Native snippets
+
+3. **Install Docker Desktop for Windows**
+   - Download from https://www.docker.com/products/docker-desktop
+   - Enable WSL 2 (Windows Subsystem for Linux 2) during setup
+   - Restart computer after installation
+   - Verify: Open PowerShell and run `docker --version`
+
+### Step-by-Step Windows Development Workflow
+
+#### Step 1: Clone Repository in VS Code
+1. Open VS Code
+2. Press `Ctrl + Shift + P` and type "Git: Clone"
+3. Paste repository URL: `https://github.com/your-username/your-repo.git`
+4. Select folder to clone into (e.g., `C:\Users\YourName\Projects\`)
+5. Open the cloned folder in VS Code
+
+#### Step 2: Open Git Bash Terminal
+1. In VS Code, press `Ctrl + ~` to open terminal
+2. Click the dropdown arrow in the terminal
+3. Select "Git Bash" from the list
+4. Terminal will now use Git Bash commands
+
+#### Step 3: Install Node Dependencies
+```bash
+# In Git Bash terminal
+npm install
+```
+
+#### Step 4: Create Environment File
+1. Right-click in Explorer panel → New File
+2. Name it `.env`
+3. Add contents:
+```
+NODE_ENV=development
+PORT=3001
+DATA_DIRECTORY=./data/
+```
+
+#### Step 5: Create Dockerfile
+1. Right-click in project root → New File
+2. Name it `Dockerfile` (no extension)
+3. Copy this content:
+```dockerfile
+# Build stage
+FROM node:22-alpine as builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# Production stage
+FROM node:22-alpine
+WORKDIR /app
+RUN npm install -g tsx
+
+# Copy built application
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package*.json ./
+COPY scripts ./scripts
+COPY tsconfig.server.json ./
+
+# Create data directory
+RUN mkdir -p /app/data
+VOLUME ["/app/data"]
+
+EXPOSE 4000
+ENV NODE_ENV=production
+ENV PORT=4000
+ENV DATA_DIRECTORY=/app/data/
+
+CMD ["node", "dist/server/index.js"]
+```
+
+#### Step 6: Create .dockerignore File
+1. Right-click in project root → New File
+2. Name it `.dockerignore`
+3. Add:
+```
+node_modules
+npm-debug.log
+dist
+.git
+.gitignore
+README.md
+.env.local
+.DS_Store
+data/database.sqlite*
+```
+
+#### Step 7: Create docker-compose.yml
+1. Right-click in project root → New File
+2. Name it `docker-compose.yml`
+3. Copy this content:
+```yaml
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATA_DIRECTORY: /app/data/
+    volumes:
+      - app_data:/app/data/
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:4000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  app_data:
+    driver: local
+```
+
+#### Step 8: Build Docker Image
+1. In Git Bash terminal, run:
+```bash
+# Build the Docker image
+docker build -t food-pantry-finder:latest .
+
+# Verify image was created
+docker images | grep food-pantry-finder
+```
+
+#### Step 9: Test Docker Container Locally
+```bash
+# Run container
+docker run -d --name food-pantry-test -p 4000:4000 -v food-pantry-data:/app/data food-pantry-finder:latest
+
+# Check if running
+docker ps
+
+# View logs
+docker logs food-pantry-test
+
+# Stop container
+docker stop food-pantry-test
+
+# Clean up
+docker rm food-pantry-test
+docker volume rm food-pantry-data
+```
+
+#### Step 10: Create .gitignore for GitHub
+1. Right-click in project root → New File
+2. Name it `.gitignore`
+3. Add:
+```
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build outputs
+dist/
+build/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Database
+data/database.sqlite
+data/database.sqlite-shm
+data/database.sqlite-wal
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+```
+
+#### Step 11: Initialize & Configure Git Repository
+```bash
+# Initialize git (if not already done)
+git init
+
+# Configure your GitHub credentials (do this once)
+git config --global user.name "Your Name"
+git config --global user.email "your.email@example.com"
+
+# Add all files
+git add .
+
+# Create initial commit
+git commit -m "Initial commit: Food Pantry Finder app with Docker setup"
+```
+
+#### Step 12: Create GitHub Repository
+1. Go to https://github.com/new
+2. Name: `food-pantry-finder`
+3. Description: "Food pantry location finder application"
+4. Choose Public or Private
+5. Click "Create repository"
+6. Copy the repository URL (HTTPS)
+
+#### Step 13: Push to GitHub from Git Bash
+```bash
+# Add remote origin (replace URL with your GitHub repo URL)
+git remote add origin https://github.com/YOUR_USERNAME/food-pantry-finder.git
+
+# Rename branch to main if needed
+git branch -M main
+
+# Push to GitHub
+git push -u origin main
+
+# Verify push was successful
+git log --oneline -5
+```
+
+#### Step 14: Create GitHub Actions for CI/CD (Optional)
+1. Create folder structure: `.github/workflows/`
+2. Right-click `.github/workflows` → New File
+3. Name it `docker-build.yml`
+4. Add:
+```yaml
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    
+    - name: Build Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: false
+        tags: food-pantry-finder:latest
+```
+
+#### Step 15: Commit GitHub Actions
+```bash
+git add .github/
+git commit -m "Add GitHub Actions CI/CD workflow"
+git push
+```
+
+### Daily Development Workflow
+
+**To start development:**
+```bash
+# Open Git Bash in VS Code (Ctrl + ~)
+npm start
+```
+
+**To run with Docker locally:**
+```bash
+docker-compose up -d
+# App will be available at http://localhost:4000
+docker-compose logs -f app
+```
+
+**To push changes to GitHub:**
+```bash
+git add .
+git commit -m "Description of changes"
+git push
+```
+
+**To update Docker image after changes:**
+```bash
+docker-compose down
+docker build -t food-pantry-finder:latest .
+docker-compose up -d
+```
+
+### Useful Git Bash Commands
+
+```bash
+# Check git status
+git status
+
+# View commit history
+git log --oneline -10
+
+# Create new branch for feature
+git checkout -b feature/new-feature-name
+
+# Switch to existing branch
+git checkout main
+
+# Delete branch
+git branch -d feature/old-feature-name
+
+# Stash uncommitted changes
+git stash
+
+# Pull latest changes from GitHub
+git pull origin main
+
+# Amend last commit
+git commit --amend --no-edit
+
+# View diff of changes
+git diff
+```
+
+### Docker Useful Commands
+
+```bash
+# List all containers
+docker ps -a
+
+# View container logs
+docker logs container-name
+
+# Stop all containers
+docker stop $(docker ps -q)
+
+# Remove unused images
+docker image prune
+
+# Remove unused volumes
+docker volume prune
+
+# Access container shell
+docker exec -it container-name sh
+
+# Rebuild without cache
+docker build --no-cache -t food-pantry-finder:latest .
+```
+
+### Troubleshooting on Windows
+
+**Port 4000 already in use:**
+```bash
+# Find process using port
+netstat -ano | findstr :4000
+
+# Kill process (replace PID)
+taskkill /PID <PID> /F
+```
+
+**Docker daemon not running:**
+- Open Docker Desktop application
+- Wait for it to fully start
+- Try command again
+
+**Permission denied errors:**
+- Run VS Code as Administrator
+- Or use Windows Terminal with Admin privileges
+
+**Git authentication issues:**
+- Use GitHub Personal Access Token instead of password
+- Generate token at https://github.com/settings/tokens
+- Use token when prompted for password
+
+**Large database file won't push:**
+- Add to `.gitignore`: `data/database.sqlite*`
+- Commit: `git commit -m "Remove database from git"`
+- Use backup strategy instead (cloud storage, separate backup tool)
+
 ## License
 Private project - all rights reserved
