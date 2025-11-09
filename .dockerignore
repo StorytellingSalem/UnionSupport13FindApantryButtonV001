@@ -45,10 +45,10 @@ logs/
 yarn-error.log
 lerna-debug.log
 
-# Ensure Docker uses package*.json and scripts/ and tsconfig.server.json
+# Ensure Docker build context includes package manifests, tsconfig and init script
 !package.json
 !package-lock.json
 !package*.json
+!tsconfig.server.json
 !scripts/
 !scripts/init-db.cjs
-!tsconfig.server.json
