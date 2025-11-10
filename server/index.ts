@@ -10,6 +10,45 @@ dotenv.config();
 
 const app = express();
 
+/**
+ * DIAGNOSTIC: install mount logging to capture every app.use / app.METHOD call
+ * and print a short stack so we can identify the caller when a bad mount value
+ * is passed to express / path-to-regexp.
+ */
+function installMountLogging(appInstance: Express) {
+  const origUse = appInstance.use.bind(appInstance);
+  (appInstance as any).use = function (...args: any[]) {
+    try {
+      const first = args[0];
+      const mountInfo = typeof first === 'string' ? first : (first && first.name) || typeof first;
+      console.log(`DEBUG MOUNT: app.use called with first arg = ${JSON.stringify(mountInfo)}`);
+      const stack = new Error().stack?.split('\n').slice(2, 8).join('\n') || '';
+      console.log('DEBUG MOUNT STACK:\n' + stack);
+    } catch (e) {
+      console.log('DEBUG MOUNT: failed to log mount args', e);
+    }
+    return origUse(...args);
+  };
+
+  const methodsToWrap = ['get', 'post', 'put', 'delete', 'patch', 'all'] as const;
+  for (const m of methodsToWrap) {
+    const orig = (appInstance as any)[m].bind(appInstance);
+    (appInstance as any)[m] = function (pathOrHandler: any, ...rest: any[]) {
+      try {
+        const info = typeof pathOrHandler === 'string' ? pathOrHandler : (pathOrHandler && pathOrHandler.name) || typeof pathOrHandler;
+        console.log(`DEBUG ROUTE: app.${m} called with first arg = ${JSON.stringify(info)}`);
+        const stack = new Error().stack?.split('\n').slice(2, 8).join('\n') || '';
+        console.log('DEBUG ROUTE STACK:\n' + stack);
+      } catch (e) {
+        console.log(`DEBUG ROUTE: failed to log for app.${m}`, e);
+      }
+      return orig(pathOrHandler, ...rest);
+    };
+  }
+}
+
+installMountLogging(app);
+
 // Body parsing middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
