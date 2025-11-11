@@ -1,4 +1,29 @@
 // server/index.ts
+
+// DIAGNOSTIC: patch path-to-regexp.parse to log its input before it throws.
+// Place this before importing modules that might invoke path-to-regexp.
+try {
+  // Use require so this works both when compiled and during local dev
+  // (path-to-regexp may be CJS in node_modules).
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const p2r = require('path-to-regexp');
+  if (p2r && typeof p2r.parse === 'function') {
+    const origParse = p2r.parse;
+    p2r.parse = function (str: any, options: any) {
+      try {
+        // log up to 2000 chars so we capture long values without flooding logs
+        console.log('P2R PARSE INPUT >>>', String(str).slice(0, 2000));
+      } catch (e) {
+        console.log('P2R PARSE INPUT (failed to stringify)', e);
+      }
+      return origParse.call(this, str, options);
+    };
+    console.log('P2R parse patched for diagnostic logging');
+  }
+} catch (e) {
+  console.log('P2R patch failed (module may load later)', e);
+}
+
 import express from 'express';
 import dotenv from 'dotenv';
 import { setupStaticServing } from './static-serve.js';
@@ -55,36 +80,55 @@ app.use(express.urlencoded({ extended: true }));
 
 /**
  * Normalize a raw BASE_PATH or BASE_URL value so it is always a safe single pathname.
+ *
+ * - Accepts:
+ *   - a path-only value like "/api" or "api" -> returns "/api"
+ *   - a full URL like "https://example.com/base/path" -> returns "/base/path"
+ * - Ensures:
+ *   - result starts with "/"
+ *   - no trailing slash (except for root "/")
+ *   - rejects values that would still contain a scheme/host or stray ":" characters
+ *     and falls back to "/" while logging a warning
  */
 function normalizeBasePath(raw?: string) {
   if (!raw) return '/';
 
+  // Trim whitespace
   raw = String(raw).trim();
 
+  // If it looks like a full URL (contains ://) try to parse and use the pathname
   if (raw.includes('://')) {
     try {
       const u = new URL(raw);
       const pathname = u.pathname || '/';
       return sanitizePathname(pathname);
     } catch {
+      // If parsing fails, fall through to the fallback below
       console.warn('normalizeBasePath: provided BASE_PATH/BASE_URL looks like a URL but failed to parse, falling back to path-only handling');
     }
   }
 
+  // If raw includes a host-like value without scheme (example: "git.example.com/base"),
+  // try to detect and extract the path after first slash. Otherwise treat as path.
   const firstSlash = raw.indexOf('/');
   if (firstSlash > 0 && !raw.startsWith('/')) {
+    // Example: "git.example.com/base/path" -> "/base/path"
     const candidate = raw.slice(firstSlash);
     if (candidate) return sanitizePathname(candidate);
   }
 
+  // Otherwise treat as a path-like string (ensure leading slash)
   const candidatePath = raw.startsWith('/') ? raw : '/' + raw;
   return sanitizePathname(candidatePath);
 }
 
 function sanitizePathname(pathname: string) {
+  // Remove trailing slashes (but keep root "/")
   let p = pathname.replace(/\/+$/g, '');
   if (p === '') p = '/';
 
+  // Defensive checks: path must not contain a scheme or colon that would confuse path-to-regexp
+  // (e.g., "https:"). If it does, warn and fallback to "/".
   if (/[A-Za-z0-9.+-]+:\/\//.test(p) || p.includes(':')) {
     console.warn(`normalizeBasePath: sanitized path "${p}" still contains a scheme or colon; falling back to "/"`);
     return '/';
@@ -102,6 +146,7 @@ console.log(`Using normalized BASE_PATH = "${BASE_PATH}"`);
 
 /**
  * Mount API routes under BASE_PATH so app can run behind a reverse-proxy with a path prefix.
+ * If no BASE_PATH is set, this is simply '/' and behavior is unchanged.
  */
 const router = express.Router();
 
@@ -209,7 +254,12 @@ export async function startServer(port: number | string = process.env.PORT || 30
   try {
     if (process.env.NODE_ENV === 'production') {
       // static serving will ignore API paths; setupStaticServing expects the app root, it uses __dirname logic
-      setupStaticServing(app);
+      try {
+        setupStaticServing(app);
+      } catch (err) {
+        console.error('setupStaticServing failed at startup (caught):', err);
+        // Continue so server still starts; logs will show the error.
+      }
     }
 
     // Start listening

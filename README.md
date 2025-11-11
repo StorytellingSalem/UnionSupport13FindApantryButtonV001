@@ -1,4 +1,4 @@
-# Food Pantry Finder - Production Deployment Guide
+# Important Note: Read README-LOCAL.md & README-DOCKER-VPS.md FIRST!" Then jump into this one for other ideas. >>>>> older title that was here said:>>>> Food Pantry Finder - Production Deployment Guide 
 
 ## Overview
 This is a full-stack Node.js + React application for finding and managing food pantries. The app uses Express.js for the backend API, React for the frontend, and SQLite for persistent data storage.
